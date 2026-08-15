@@ -1,5 +1,5 @@
 {
-  "name": "splitkit",
+  "name": "@swapnil_codes/splitkit",
   "version": "0.1.0",
   "description": "Deterministic A/B testing and feature flagging module for Expo & React Native",
   "main": "build/index.js",
