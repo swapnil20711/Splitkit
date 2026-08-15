@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android", "web"],
+  "apple": {
+    "modules": ["SplitkitModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.splitkit.SplitkitModule"]
+  }
+}
