@@ -16,7 +16,7 @@ Splitkit buckets users locally using a MurmurHash3 hash of `userId:experimentKey
 ## Installation
 
 ```bash
-npx expo install @swapnil_codes/splitkit
+npx expo install expo-splitkit
 ```
 
 Then rebuild your native project (this is a native module, so Expo Go won't pick it up):
@@ -36,7 +36,7 @@ Wrap your app in a provider, declare your experiments, and read the assigned var
 
 ```tsx
 // App.tsx
-import { SplitKitTestingProvider, getDeviceId } from '@swapnil_codes/splitkit';
+import { SplitKitTestingProvider, getDeviceId } from 'expo-splitkit';
 import OnboardingScreen from './OnboardingScreen';
 
 const EXPERIMENTS = {
@@ -66,7 +66,7 @@ export default function App() {
 
 ```tsx
 // OnboardingScreen.tsx
-import { useExperiment } from '@swapnil_codes/splitkit';
+import { useExperiment } from 'expo-splitkit';
 
 type Payload = { title: string };
 
@@ -120,7 +120,7 @@ Synchronously returns a stable per-install device identifier.
 The pure bucketing function behind the hook — useful in tests, scripts, or non-React code.
 
 ```ts
-import { evaluateExperiment } from '@swapnil_codes/splitkit';
+import { evaluateExperiment } from 'expo-splitkit';
 
 evaluateExperiment(EXPERIMENTS.onboarding_v2, { id: 'user-123' });
 // => { variant: 'quick_swipe', payload: { title: '3-Step Swipe Walkthrough' } }
