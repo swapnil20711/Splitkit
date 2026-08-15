@@ -1,23 +1,27 @@
-import Splitkit from 'splitkit';
-import { Button, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { getDeviceId, SplitKitTestingProvider } from 'splitkit';
+import { SafeAreaView, Text, View } from 'react-native';
+import OnboardingScreen from './OnboardingScreen';
 
 export default function App() {
+  const EXPERIMENTS = {
+    onboarding_v2: {
+      key: 'onboarding_v2',
+      variants: [
+        { name: 'video_intro', weight: 0.5, payload: { title: 'Watch Intro Video' } },
+        { name: 'quick_swipe', weight: 0.5, payload: { title: '3-Step Swipe Walkthrough' } },
+      ],
+      fallback: 'video_intro',
+    },
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.container}>
-        <Text style={styles.header}>Module API Example</Text>
-        <Group name="Functions">
-          <Text>{Splitkit.hello()}</Text>
-        </Group>
-        <Group name="Async functions">
-          <Button
-            title="Set value"
-            onPress={async () => {
-              await Splitkit.setValueAsync('Hello from JS!');
-            }}
-          />
-        </Group>
-      </ScrollView>
+      <SplitKitTestingProvider user={{ id: getDeviceId() }} experiments={EXPERIMENTS} onExposure={(event) => {
+        console.log(`[Tracking] Device ${event.userId} exposed to
+  ${event.experimentKey} -> ${event.variant}`);
+      }}>
+        <OnboardingScreen />
+      </SplitKitTestingProvider>
     </SafeAreaView>
   );
 }

@@ -4,11 +4,19 @@ public class SplitkitModule: Module {
   public func definition() -> ModuleDefinition {
     Name("Splitkit")
 
-    Function("hello") {
-      return "Hello world! 👋"
-    }
-
-    AsyncFunction("setValueAsync") { (value: String) in
+    Function("getDeviceId") { ()-> String in
+        if let vendorId = UIDevice.current.identifierForVendor?.uuidString {
+            return vendorId
+        }
+        
+        let key = "splitkit_persistent_device_id"
+        if let storedId = UserDefaults.standard.string(forKey: key) {
+            return storedId
+        }
+        
+        let newId = UUID().uuidString
+        UserDefaults.standard.set(newId, forKey: key)
+        return newId
     }
   }
 }
