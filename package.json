@@ -14,16 +14,17 @@
     "open:android": "node internal/module_scripts/open-android.js"
   },
   "keywords": [
-    "react-native",
-    "feature flagging",
-    "A/B testing",
-    "Split testing",
-    "Bucket testing",
-    "Controlled experiments",
-    "experimentation",
     "expo",
+    "react-native",
     "splitkit",
-    "Splitkit"
+    "feature-flags",
+    "feature-flagging",
+    "feature-toggle",
+    "ab-testing",
+    "split-testing",
+    "bucket-testing",
+    "experimentation",
+    "controlled-experiments"
   ],
   "repository": "https://github.com/swapnil20711/splitkit",
   "bugs": {
