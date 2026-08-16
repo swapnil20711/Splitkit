@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import { evaluateExperiment } from './engine';
 import { Experiment, ExposureCallback, UserContext } from './Splitkit.types';
 import SplitKitModule from './SplitkitModule';
@@ -42,21 +42,30 @@ export const SplitKitTestingProvider: React.FC<SplitKitTestingProviderProps> = (
         attributes: user?.attributes || {},
       }), [user?.id, user?.attributes, deviceId]);
 
-    const logExposure = (experimentKey: string, variant: string) => {
-        const dedupeKey = `${user.id}:${experimentKey}:${variant}`;
+    // Keyed on activeUser.id, the same identity bucketing uses, so an exposure
+    // event can always be joined back to the assignment that produced it.
+    // Using the raw `user.id` here would log `undefined` for anonymous users
+    // while they were actually bucketed by device ID.
+    const logExposure = useCallback((experimentKey: string, variant: string) => {
+        const dedupeKey = `${activeUser.id}:${experimentKey}:${variant}`;
         if (!exposedSetRef.current.has(dedupeKey)) {
             exposedSetRef.current.add(dedupeKey);
             onExposure?.({
                 experimentKey,
                 variant,
-                userId: user.id,
+                userId: activeUser.id,
                 timestamp: Date.now(),
             });
         }
-    };
+    }, [activeUser.id, onExposure]);
+
+    const value = useMemo(
+        () => ({ user: activeUser, experiments, logExposure, deviceId }),
+        [activeUser, experiments, logExposure, deviceId]
+    );
 
     return (
-        <SplitKitTestingContext.Provider value={{ user:activeUser, experiments, logExposure,deviceId }}>
+        <SplitKitTestingContext.Provider value={value}>
             {children}
         </SplitKitTestingContext.Provider>
     );
@@ -65,25 +74,25 @@ export const SplitKitTestingProvider: React.FC<SplitKitTestingProviderProps> = (
 export function useExperiment<T = any>(
     experimentKey: string,
     fallbackVariant: string = 'control'
-): { variant: string,deviceId:string; payload?: T } {
+): { variant: string, deviceId: string; payload?: T } {
+    // Every hook below runs unconditionally, including when there is no
+    // provider above. Returning early on a missing context would change the
+    // hook count between renders and break the Rules of Hooks.
     const context = useContext(SplitKitTestingContext);
-    if (!context) {
-        return { variant: fallbackVariant,deviceId:"" };
-    }
+    const config = context?.experiments[experimentKey];
+    const user = context?.user;
+    const logExposure = context?.logExposure;
 
-    const { user, experiments, logExposure,deviceId } = context;
-    const config = experiments[experimentKey];
-
-    const result = useMemo(() => {
-        if (!config) return { variant: fallbackVariant };
+    const result = useMemo((): { variant: string; payload?: T } => {
+        if (!config || !user) return { variant: fallbackVariant };
         return evaluateExperiment<T>(config, user);
-    }, [config, user]);
+    }, [config, user, fallbackVariant]);
 
     useEffect(() => {
-        if (config) {
+        if (config && logExposure) {
             logExposure(experimentKey, result.variant);
         }
-    }, [experimentKey, result.variant]);
+    }, [experimentKey, result.variant, config, logExposure]);
 
-    return  { ...result, deviceId };;
+    return { ...result, deviceId: context?.deviceId ?? '' };
 }

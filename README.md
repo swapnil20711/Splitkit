@@ -130,6 +130,8 @@ evaluateExperiment(EXPERIMENTS.onboarding_v2, { id: 'user-123' });
 
 The hashing primitives are exported too. `getBucketScore` returns a stable float in `[0, 1)` for a user/experiment pair — handy for verifying your split distribution offline.
 
+Strings are hashed as UTF-8 bytes, and the implementation matches the canonical MurmurHash3 (x86, 32-bit) reference. That means a backend in any language can recompute the exact same bucket for a user without calling the app.
+
 ```ts
 getBucketScore('user-123', 'onboarding_v2'); // => 0.7213…
 ```
@@ -179,7 +181,7 @@ Consequences worth knowing:
 - **Assignments are stable** as long as `userId` and `key` don't change. Nothing is persisted, so there's no cache to invalidate.
 - **Order matters.** Reordering `variants` reshuffles who lands where. Append new variants at the end when you can.
 - **Changing `key` reshuffles everyone.** That's the mechanism for a clean re-randomization.
-- **Weights should sum to 1.0.** If they sum to less, users above the total fall through to `fallback`.
+- **Weights should sum to 1.0.** If they don't, the split is skewed — SplitKit warns about it in development. Users above the total land in the *last* variant rather than `fallback`, so floating-point rounding never drops anyone out of an experiment.
 - **Each experiment is independent** because the key is part of the hash input — a user in `variant_a` of one test isn't biased toward any variant of another.
 
 ---
