@@ -15,6 +15,12 @@
   },
   "keywords": [
     "react-native",
+    "feature flagging",
+    "A/B testing",
+    "Split testing",
+    "Bucket testing",
+    "Controlled experiments",
+    "experimentation",
     "expo",
     "splitkit",
     "Splitkit"
